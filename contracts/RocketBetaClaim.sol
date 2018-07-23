@@ -19,7 +19,7 @@ contract RocketBetaClaim {
     address public owner;
 
     // Claim settings
-    uint256 public rplTotal = 0;
+    uint256 public rplTotal;
     uint256 public claimStart;
     uint256 public claimEnd;
     uint256 public constant claimStartDelay = 2 weeks;
@@ -113,6 +113,20 @@ contract RocketBetaClaim {
     function setClaimStart(uint256 _claimStart) public onlyOwner onlyBeforeClaimStart {
         claimStart = _claimStart;
         claimEnd = claimStart + claimPeriod;
+    }
+
+
+    /**
+     * Set RPL total claimable
+     */
+    function setRplTotal(uint256 _rplTotal) public onlyOwner onlyBeforeClaimStart {
+
+        // Check total is covered by contract balance
+        // :TODO:
+
+        // Set total
+        rplTotal = _rplTotal;
+
     }
 
 
