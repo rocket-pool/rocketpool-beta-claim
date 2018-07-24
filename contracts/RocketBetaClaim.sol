@@ -41,6 +41,9 @@ contract RocketBetaClaim {
     // Amount withdrawn from contract
     event Withdrawal(address indexed to, uint256 value, uint256 created);
 
+    // Beta claim closed
+    event Close(address indexed balanceSentTo, uint256 balance, uint256 created);
+
 
     /**
      * Can only be called by the contract owner account
@@ -152,6 +155,9 @@ contract RocketBetaClaim {
         // Mark participant as claimed
         participantClaimed[msg.sender] = true;
 
+        // Emit withdrawal event
+        emit Withdrawal(msg.sender, claimAmount, now);
+
     }
 
 
@@ -235,6 +241,9 @@ contract RocketBetaClaim {
 
         // Set closed flag
         closed = true;
+
+        // Emit close event
+        emit Close(owner, rplBalance, now);
 
     }
 
