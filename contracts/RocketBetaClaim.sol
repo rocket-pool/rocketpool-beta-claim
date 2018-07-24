@@ -26,6 +26,9 @@ contract RocketBetaClaim {
     uint256 public constant claimStartDelay = 2 weeks;
     uint256 public constant claimPeriod = 4 weeks;
 
+    // Closed status
+    bool public closed = false;
+
     // Participants
     address[] public participants;
     mapping(address => uint256) private participantIndexes; // Offset by +1
@@ -34,9 +37,6 @@ contract RocketBetaClaim {
     // The RPL token contract
     ERC20 tokenContract = ERC20(0);
 
-
-    // Amount deposited into contract
-    event Deposit(address indexed from, uint256 value, uint256 created);
 
     // Amount withdrawn from contract
     event Withdrawal(address indexed to, uint256 value, uint256 created);
@@ -139,11 +139,15 @@ contract RocketBetaClaim {
      */
     function claimRpl() public onlyParticipant onlyAfterClaimStart {
 
+        // Check claim period has not closed
+        require(!closed);
+
         // Check participant has not already claimed
         require(participantClaimed[msg.sender] == false);
 
-        // Transfer RPL
-        // :TODO: implement
+        // Transfer RPL claim amount
+        uint256 claimAmount = getClaimAmount();
+        require(tokenContract.transfer(msg.sender, claimAmount) == true);
 
         // Mark participant as claimed
         participantClaimed[msg.sender] = true;
@@ -220,8 +224,17 @@ contract RocketBetaClaim {
      */
     function close() public onlyOwner onlyAfterClaimEnd {
 
-        // Transfer RPL to owner
-        // :TODO: implement
+        // Check not already closed
+        require(!closed);
+
+        // Transfer remaining RPL balance to owner
+        uint256 rplBalance = tokenContract.balanceOf(address(this));
+        if (rplBalance > 0) {
+            require(tokenContract.transfer(owner, rplBalance) == true);
+        }
+
+        // Set closed flag
+        closed = true;
 
     }
 
