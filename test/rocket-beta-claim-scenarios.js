@@ -58,3 +58,39 @@ export async function scenarioAddParticipant({participantAddress, fromAddress}) 
     assert.equal(participantCount2, participantCount1 + 1, 'Participant count was not updated successfully.');
 
 }
+
+
+// Remove a participant
+export async function scenarioRemoveParticipant({participantAddress, fromAddress}) {
+    const rocketBetaClaim = await RocketBetaClaim.deployed();
+
+    // Get initial participant list
+    let participants = [];
+    let count = parseInt(await rocketBetaClaim.getParticipantCount.call());
+    for (let pi = 0; pi < count; ++pi) participants.push(await rocketBetaClaim.participants.call(pi));
+
+    // Get expected final participant list
+    let expectedParticipants = participants.filter(el => (el != participantAddress));
+
+    // Get participant info
+    let participantCount1 = parseInt(await rocketBetaClaim.getParticipantCount.call());
+    let participantExists1 = await rocketBetaClaim.getParticipantExists.call(participantAddress);
+
+    // Remove participant
+    await rocketBetaClaim.removeParticipant(participantAddress, {from: fromAddress});
+
+    // Get participant info
+    let participantCount2 = parseInt(await rocketBetaClaim.getParticipantCount.call());
+    let participantExists2 = await rocketBetaClaim.getParticipantExists.call(participantAddress);
+
+    // Check participant was removed
+    assert.isFalse(participantExists2, 'Participant was not removed successfully.');
+    assert.equal(participantCount2, participantCount1 - 1, 'Participant count was not updated successfully.');
+
+    // Check other participants are unaffected
+    for (let pi = 0; pi < expectedParticipants.length; ++pi) {
+        let exists = await rocketBetaClaim.getParticipantExists.call(expectedParticipants[pi]);
+        assert.isTrue(exists, 'Other participant was affected.');
+    }
+
+}

@@ -1,5 +1,5 @@
 import { printTitle, assertThrows, printEvent, soliditySha3, TimeController } from './utils';
-import { scenarioSetClaimStart, scenarioSetRplTotal, scenarioAddParticipant } from './rocket-beta-claim-scenarios';
+import { scenarioSetClaimStart, scenarioSetRplTotal, scenarioAddParticipant, scenarioRemoveParticipant } from './rocket-beta-claim-scenarios';
 
 // Import artifacts
 const DummyRocketPoolToken = artifacts.require('./contract/DummyRocketPoolToken.sol');
@@ -183,6 +183,62 @@ contract('RocketBetaClaim', (accounts) => {
     });
 
 
+    // Owner can remove a participant
+    it(printTitle('owner', 'can remove a participant'), async () => {
+
+        // Participant count
+        let count;
+
+        // Remove from middle of list
+        count = parseInt(await rocketBetaClaim.getParticipantCount.call());
+        let remove1 = await rocketBetaClaim.participants.call(Math.floor((count - 1) / 2));
+        await scenarioRemoveParticipant({
+            participantAddress: remove1,
+            fromAddress: owner,
+        });
+
+        // Remove from end of list
+        count = parseInt(await rocketBetaClaim.getParticipantCount.call());
+        let remove2 = await rocketBetaClaim.participants.call(count - 1);
+        await scenarioRemoveParticipant({
+            participantAddress: remove2,
+            fromAddress: owner,
+        });
+
+        // Remove from start of list
+        let remove3 = await rocketBetaClaim.participants.call(0);
+        await scenarioRemoveParticipant({
+            participantAddress: remove3,
+            fromAddress: owner,
+        });
+
+    });
+
+
+    // Owner cannot remove a participant who doesn't exist
+    it(printTitle('owner', 'cannot remove a participant who doesn\'t exist'), async () => {
+        await assertThrows(scenarioRemoveParticipant({
+            participantAddress: participant3,
+            fromAddress: owner,
+        }), 'Random account added a participant.');
+    });
+
+
+    // Random account cannot remove a participant
+    it(printTitle('random account', 'cannot remove a participant'), async () => {
+
+        // Get first participant
+        let remove = await rocketBetaClaim.participants.call(0);
+
+        // Remove
+        await assertThrows(scenarioAddParticipant({
+            participantAddress: remove,
+            fromAddress: accounts[1],
+        }), 'Random account removed a participant.');
+
+    });
+
+
     //
     // During claim period
     //
@@ -221,6 +277,30 @@ contract('RocketBetaClaim', (accounts) => {
             rplTotal: claimRplBalance,
             fromAddress: owner,
         }), 'Owner set the RPL total claimable after claim start.');
+
+    });
+
+
+    // Owner cannot add a participant after claim start
+    it(printTitle('owner', 'cannot add a participant after claim start'), async () => {
+        await assertThrows(scenarioAddParticipant({
+            participantAddress: participant3,
+            fromAddress: owner,
+        }), 'Owner added a participant after claim start.');
+    });
+
+
+    // Owner cannot remove a participant after claim start
+    it(printTitle('owner', 'cannot remove a participant after claim start'), async () => {
+
+        // Get first participant
+        let remove = await rocketBetaClaim.participants.call(0);
+
+        // Remove
+        await assertThrows(scenarioRemoveParticipant({
+            participantAddress: remove,
+            fromAddress: owner,
+        }), 'Owner removed a participant after claim start.');
 
     });
 
