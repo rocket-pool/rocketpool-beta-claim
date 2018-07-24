@@ -1,5 +1,6 @@
-pragma solidity 0.4.23;
+pragma solidity ^0.4.23;
 
+import "./interface/ERC20.sol";
 import './lib/SafeMath.sol';
 
 
@@ -28,6 +29,9 @@ contract RocketBetaClaim {
     // Participants
     address[] public participants;
     mapping(address => uint256) private participantIndexes; // Offset by +1
+
+    // The RPL token contract
+    ERC20 tokenContract = ERC20(0);
 
 
     // Amount deposited into contract
@@ -66,7 +70,7 @@ contract RocketBetaClaim {
     /**
      * Construct
      */
-    constructor(address[] participantList) public {
+    constructor(address _tokenAddress) public {
 
         // Assign contract owner to deployer
         owner = msg.sender;
@@ -75,10 +79,13 @@ contract RocketBetaClaim {
         claimStart = now + claimStartDelay;
         claimEnd = claimStart + claimPeriod;
 
-        // Build participant array
-        for (uint pi = 0; pi < participantList.length; ++pi) {
-            participantIndexes[participantList[pi]] = participants.push(participantList[pi]);
-        }
+        //// Build participant array
+        //for (uint pi = 0; pi < participantList.length; ++pi) {
+        //    participantIndexes[participantList[pi]] = participants.push(participantList[pi]);
+        //}
+
+        // Initialise the token contract
+        tokenContract = ERC20(_tokenAddress);
 
     }
 
@@ -101,7 +108,7 @@ contract RocketBetaClaim {
     /**
      * Get RPL claim amount
      */
-    function getClaimAmount() public {
+    function getClaimAmount() public view returns (uint256 amount) {
         if (participants.length == 0) return 0;
         return rplTotal / participants.length;
     }

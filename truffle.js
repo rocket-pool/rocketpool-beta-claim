@@ -1,18 +1,55 @@
-/*
- * NB: since truffle-hdwallet-provider 0.0.5 you must wrap HDWallet providers in a 
- * function when declaring them. Failure to do so will cause commands to hang. ex:
- * ```
- * mainnet: {
- *     provider: function() { 
- *       return new HDWalletProvider(mnemonic, 'https://mainnet.infura.io/<infura-key>') 
- *     },
- *     network_id: '1',
- *     gas: 4500000,
- *     gasPrice: 10000000000,
- *   },
- */
+/**
+  Rocketpool Beta Claim
+  @author Jake Pospischil
+  @email jake@rocketpool.net
+  @version 0.1
+*/
 
+// Require correct Web3 version
+const Web3 = require('web3');
+
+// Import babel for ES6 imports
+require('babel-register')({
+  presets: [['env', {
+    'targets': {
+      'node': '8.0'
+    }
+  }]],
+  retainLines: true,
+});
+require('babel-polyfill');
+
+// Truffle config
 module.exports = {
-  // See <http://truffleframework.com/docs/advanced/configuration>
-  // to customize your Truffle configuration!
+  web3: Web3,
+  networks: {
+
+    // Ganache
+    development: {
+      host: 'localhost',
+      port: 8545,
+      network_id: '*', // Match any network id
+      rocketPoolTokenAddress: null, // Rocket Pool Token contract address
+      dummyRocketPoolToken: true, // Deploy dummy Rocket Pool Token contract
+    },
+
+    // Local dev network
+    dev: {
+      host: 'localhost',
+      port: 8545,
+      network_id: '*', // Match any network id
+      rocketPoolTokenAddress: null, // Rocket Pool Token contract address
+      dummyRocketPoolToken: true, // Deploy dummy Rocket Pool Token contract
+    },
+
+    // Rinkeby test network
+    rinkeby: {
+      host: 'localhost',
+      port: 8545,
+      network_id: '4', // Rinkeby
+      rocketPoolTokenAddress: null, // Rocket Pool Token contract address
+      dummyRocketPoolToken: true, // Deploy dummy Rocket Pool Token contract
+    }
+
+  },
 };

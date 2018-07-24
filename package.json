@@ -1,0 +1,31 @@
+{
+  "name": "rocket-beta-claim",
+  "version": "0.1.0",
+  "description": "A smart contract for users who participated in the beta to claim RPL",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:rocket-pool/rocketpool-beta-claim.git"
+  },
+  "author": "Jake Pospischil <jake@rocketpool.net>",
+  "scripts": {
+    "console": "truffle console",
+    "compile": "truffle compile",
+    "migrate": "truffle migrate",
+    "test": "scripts/test.sh test/rocket-beta-claim-tests.js"
+  },
+  "devDependencies": {
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "babel-preset-stage-3": "^6.24.1",
+    "babel-register": "^6.26.0",
+    "ganache-cli": "^6.1.0",
+    "truffle": "^4.1.3",
+    "truffle-contract": "^3.0.4",
+    "web3": "^1.0.0-beta.33",
+    "web3-utils": "^1.0.0-beta.33"
+  },
+  "dependencies": {
+    "scrypt": "^6.0.3"
+  }
+}
