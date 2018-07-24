@@ -419,4 +419,12 @@ contract('RocketBetaClaim', (accounts) => {
     //
 
 
+    // Participant cannot claim RPL after the beta claim is closed
+    it(printTitle('participant', 'cannot claim RPL after the beta claim is closed'), async () => {
+        await assertThrows(scenarioClaimRpl({
+            fromAddress: participant2,
+        }), 'Participant claimed RPL after the beta claim closed.');
+    });
+
+
 });
