@@ -70,7 +70,7 @@ contract RocketBetaClaim {
     /**
      * Construct
      */
-    constructor(address _tokenAddress) public {
+    constructor(address _tokenAddress, address[] participantList) public {
 
         // Assign contract owner to deployer
         owner = msg.sender;
@@ -79,10 +79,10 @@ contract RocketBetaClaim {
         claimStart = now + claimStartDelay;
         claimEnd = claimStart + claimPeriod;
 
-        //// Build participant array
-        //for (uint pi = 0; pi < participantList.length; ++pi) {
-        //    participantIndexes[participantList[pi]] = participants.push(participantList[pi]);
-        //}
+        // Build participant array
+        for (uint pi = 0; pi < participantList.length; ++pi) {
+            participantIndexes[participantList[pi]] = participants.push(participantList[pi]);
+        }
 
         // Initialise the token contract
         tokenContract = ERC20(_tokenAddress);
