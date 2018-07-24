@@ -1,5 +1,5 @@
 import { printTitle, assertThrows, printEvent, soliditySha3, TimeController } from './utils';
-import { scenarioSetClaimStart, scenarioSetRplTotal, scenarioAddParticipant, scenarioRemoveParticipant } from './rocket-beta-claim-scenarios';
+import { scenarioSetClaimStart, scenarioSetRplTotal, scenarioAddParticipant, scenarioRemoveParticipant, scenarioClaimRpl, scenarioClose } from './rocket-beta-claim-scenarios';
 
 // Import artifacts
 const DummyRocketPoolToken = artifacts.require('./contract/DummyRocketPoolToken.sol');
@@ -239,6 +239,40 @@ contract('RocketBetaClaim', (accounts) => {
     });
 
 
+    // Owner can add a participant who was removed
+    it(printTitle('owner', 'can add a participant who was removed'), async () => {
+
+        // Remove participant1 if not removed
+        let exists = await rocketBetaClaim.getParticipantExists.call(participant1);
+        if (exists) await scenarioRemoveParticipant({
+            participantAddress: participant1,
+            fromAddress: owner,
+        });
+
+        // Add participant1
+        await scenarioAddParticipant({
+            participantAddress: participant1,
+            fromAddress: owner,
+        });
+
+        // Add participant2 if removed
+        exists = await rocketBetaClaim.getParticipantExists.call(participant2);
+        if (!exists) await scenarioAddParticipant({
+            participantAddress: participant2,
+            fromAddress: owner,
+        });
+
+    });
+
+
+    // Participant cannot claim RPL before claim start
+    it(printTitle('participant', 'cannot claim RPL before claim start'), async () => {
+        await assertThrows(scenarioClaimRpl({
+            fromAddress: participant1,
+        }), 'Participant claimed RPL before claim start.');
+    });
+
+
     //
     // During claim period
     //
@@ -305,6 +339,38 @@ contract('RocketBetaClaim', (accounts) => {
     });
 
 
+    // Participant can claim RPL
+    it(printTitle('participant', 'can claim RPL'), async () => {
+        await scenarioClaimRpl({
+            fromAddress: participant1,
+        });
+    });
+
+
+    // Participant cannot claim RPL twice
+    it(printTitle('participant', 'cannot claim RPL twice'), async () => {
+        await assertThrows(scenarioClaimRpl({
+            fromAddress: participant1,
+        }), 'Participant claimed RPL twice.');
+    });
+
+
+    // Random account cannot claim RPL
+    it(printTitle('random account', 'cannot claim RPL'), async () => {
+        await assertThrows(scenarioClaimRpl({
+            fromAddress: accounts[9],
+        }), 'Random account claimed RPL.');
+    });
+
+
+    // Owner cannot close the beta claim before claim end
+    it(printTitle('owner', 'cannot close the beta claim before claim end'), async () => {
+        await assertThrows(scenarioClose({
+            fromAddress: owner,
+        }), 'Owner closed the beta claim before claim end.');
+    });
+
+
     //
     // After claim period
     //
@@ -315,6 +381,42 @@ contract('RocketBetaClaim', (accounts) => {
         let claimPeriod = parseInt(await rocketBetaClaim.claimPeriod.call());
         await TimeController.addSeconds(claimPeriod);
     });
+
+
+    // Random account cannot close the beta claim
+    it(printTitle('random account', 'cannot close the beta claim'), async () => {
+        await assertThrows(scenarioClose({
+            fromAddress: accounts[1],
+        }), 'Random account closed the beta claim.');
+    });
+
+
+    // Owner can close the beta claim
+    it(printTitle('owner', 'can close the beta claim'), async () => {
+
+        // Check for remaining RPL balance
+        let rplBalance = parseInt(await dummyRocketPoolToken.balanceOf(rocketBetaClaim.address));
+        assert.isAbove(rplBalance, 0, 'Pre-check failed - beta claim contract has no remaining RPL balance.');
+
+        // Close
+        await scenarioClose({
+            fromAddress: owner,
+        });
+
+    });
+
+
+    // Owner cannot close the beta claim twice
+    it(printTitle('owner', 'cannot close the beta claim twice'), async () => {
+        await assertThrows(scenarioClose({
+            fromAddress: owner,
+        }), 'Owner closed the beta claim twice.');
+    });
+
+
+    //
+    // Closed
+    //
 
 
 });
