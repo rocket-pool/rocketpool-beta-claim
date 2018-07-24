@@ -180,6 +180,9 @@ contract RocketBetaClaim {
      */
     function addParticipant(address _participant) public onlyOwner onlyBeforeClaimStart {
 
+        // Check address is valid
+        require(_participant != 0x0);
+
         // Cancel if already added
         require(participantIndexes[_participant] == 0);
 

@@ -36,3 +36,25 @@ export async function scenarioSetRplTotal({rplTotal, fromAddress}) {
     assert.equal(rplTotalClaimable, rplTotal, 'RPL total was not set correctly.');
 
 }
+
+
+// Add a participant
+export async function scenarioAddParticipant({participantAddress, fromAddress}) {
+    const rocketBetaClaim = await RocketBetaClaim.deployed();
+
+    // Get participant info
+    let participantCount1 = parseInt(await rocketBetaClaim.getParticipantCount.call());
+    let participantExists1 = await rocketBetaClaim.getParticipantExists.call(participantAddress);
+
+    // Add participant
+    await rocketBetaClaim.addParticipant(participantAddress, {from: fromAddress});
+
+    // Get participant info
+    let participantCount2 = parseInt(await rocketBetaClaim.getParticipantCount.call());
+    let participantExists2 = await rocketBetaClaim.getParticipantExists.call(participantAddress);
+
+    // Check participant was added
+    assert.isTrue(participantExists2, 'Participant was not added successfully.');
+    assert.equal(participantCount2, participantCount1 + 1, 'Participant count was not updated successfully.');
+
+}

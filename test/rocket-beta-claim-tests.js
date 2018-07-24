@@ -1,23 +1,27 @@
 import { printTitle, assertThrows, printEvent, soliditySha3, TimeController } from './utils';
-import { scenarioSetClaimStart, scenarioSetRplTotal } from './rocket-beta-claim-scenarios';
+import { scenarioSetClaimStart, scenarioSetRplTotal, scenarioAddParticipant } from './rocket-beta-claim-scenarios';
 
 // Import artifacts
 const DummyRocketPoolToken = artifacts.require('./contract/DummyRocketPoolToken.sol');
 const RocketBetaClaim = artifacts.require('./contract/RocketBetaClaim.sol');
 
 
-// Debugging
+// Debug participant list
 async function debugParticipants() {
     const rocketBetaClaim = await RocketBetaClaim.deployed();
+
+    // Get count
+    let count = parseInt(await rocketBetaClaim.getParticipantCount.call());
+
+    // Get and log participants
     console.log('-----');
-    let participant, participantIndex = 0, err = false;
-    do {
-        try { participant = await rocketBetaClaim.participants.call(participantIndex++); }
-        catch (e) { err = true; }
-        if (!err) console.log(`participant ${participantIndex}:`, participant);
+    let participant, pi;
+    for (pi = 0; pi < count; ++pi) {
+        participant = await rocketBetaClaim.participants.call(pi);
+        console.log(`participant ${pi}:`, participant);
     }
-    while (!err);
     console.log('-----');
+
 }
 
 
@@ -27,6 +31,11 @@ contract('RocketBetaClaim', (accounts) => {
 
     // The owner
     const owner = web3.eth.coinbase;
+
+    // Participant accounts
+    const participant1 = accounts[1];
+    const participant2 = accounts[2];
+    const participant3 = accounts[3];
 
     // Claim start time delay
     const day = (60 * 60 * 24); // seconds
@@ -131,6 +140,46 @@ contract('RocketBetaClaim', (accounts) => {
             fromAddress: accounts[1],
         }), 'Random account set the RPL total claimable.');
 
+    });
+
+
+    // Owner can add a participant
+    it(printTitle('owner', 'can add a participant'), async () => {
+        await scenarioAddParticipant({
+            participantAddress: participant1,
+            fromAddress: owner,
+        });
+        await scenarioAddParticipant({
+            participantAddress: participant2,
+            fromAddress: owner,
+        });
+    });
+
+
+    // Owner cannot add a participant with a null address
+    it(printTitle('owner', 'cannot add a participant with a null address'), async () => {
+        await assertThrows(scenarioAddParticipant({
+            participantAddress: '0x0000000000000000000000000000000000000000',
+            fromAddress: owner,
+        }), 'Owner added a participant with a null address.');
+    });
+
+
+    // Owner cannot add a participant who already exists
+    it(printTitle('owner', 'cannot add a participant who already exists'), async () => {
+        await assertThrows(scenarioAddParticipant({
+            participantAddress: participant1,
+            fromAddress: owner,
+        }), 'Owner added a participant who already exists.');
+    });
+
+
+    // Random account cannot add a participant
+    it(printTitle('random account', 'cannot add a participant'), async () => {
+        await assertThrows(scenarioAddParticipant({
+            participantAddress: participant3,
+            fromAddress: accounts[1],
+        }), 'Random account added a participant.');
     });
 
 
