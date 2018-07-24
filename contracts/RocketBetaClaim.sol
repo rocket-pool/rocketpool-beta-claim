@@ -29,6 +29,7 @@ contract RocketBetaClaim {
     // Participants
     address[] public participants;
     mapping(address => uint256) private participantIndexes; // Offset by +1
+    mapping(address => bool) private participantClaimed;
 
     // The RPL token contract
     ERC20 tokenContract = ERC20(0);
@@ -46,6 +47,15 @@ contract RocketBetaClaim {
      */
     modifier onlyOwner() {
         require(msg.sender == owner);
+        _;
+    }
+
+
+    /**
+     * Can only be called by a participant
+     */
+    modifier onlyParticipant() {
+        require(participantIndexes[msg.sender] != 0);
         _;
     }
 
@@ -91,26 +101,53 @@ contract RocketBetaClaim {
 
 
     /**
-     * Claim RPL
-     * Only callable by participant address
+     * Check if a participant exists
      */
-    function claimRpl() public onlyAfterClaimStart {
-
-        // Cancel if not sent from participant address
-        require(participantIndexes[msg.sender] != 0);
-
-        // Transfer RPL
-        // :TODO: implement
-
+    function getParticipantExists(address _participant) public view returns (bool exists) {
+        return (participantIndexes[_participant] != 0);
     }
 
 
     /**
-     * Get RPL claim amount
+     * Check if a participant has already claimed their reward
+     */
+    function getParticipantClaimed(address _participant) public view returns (bool claimed) {
+        return (participantClaimed[_participant] == true);
+    }
+
+
+    /**
+     * Get participant count
+     */
+    function getParticipantCount() public view returns (uint256 count) {
+        return participants.length;
+    }
+
+
+    /**
+     * Get RPL claim amount per participant
      */
     function getClaimAmount() public view returns (uint256 amount) {
         if (participants.length == 0) return 0;
         return rplTotal / participants.length;
+    }
+
+
+    /**
+     * Claim RPL
+     * Only callable by participant address
+     */
+    function claimRpl() public onlyParticipant onlyAfterClaimStart {
+
+        // Check participant has not already claimed
+        require(participantClaimed[msg.sender] == false);
+
+        // Transfer RPL
+        // :TODO: implement
+
+        // Mark participant as claimed
+        participantClaimed[msg.sender] = true;
+
     }
 
 
