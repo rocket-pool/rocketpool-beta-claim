@@ -1,9 +1,25 @@
 import { printTitle, assertThrows, printEvent, soliditySha3, TimeController } from './utils';
-//import {  } from './rocket-beta-claim-scenarios';
+import { scenarioSetClaimStart } from './rocket-beta-claim-scenarios';
 
 // Import artifacts
 const DummyRocketPoolToken = artifacts.require('./contract/DummyRocketPoolToken.sol');
 const RocketBetaClaim = artifacts.require('./contract/RocketBetaClaim.sol');
+
+
+// Debugging
+async function debugParticipants() {
+    const rocketBetaClaim = await RocketBetaClaim.deployed();
+    console.log('-----');
+    let participant, participantIndex = 0, err = false;
+    do {
+        try { participant = await rocketBetaClaim.participants.call(participantIndex++); }
+        catch (e) { err = true; }
+        if (!err) console.log(`participant ${participantIndex}:`, participant);
+    }
+    while (!err);
+    console.log('-----');
+}
+
 
 // Start the tests
 contract('RocketBetaClaim', (accounts) => {
@@ -32,9 +48,35 @@ contract('RocketBetaClaim', (accounts) => {
     });
 
 
-    // Owner
-    it(printTitle('owner', ''), async () => {
-        
+    // Owner can set the claim start time
+    it(printTitle('owner', 'can set the claim start time'), async () => {
+
+        // Get claim start time, 3 weeks in future
+        let now = Math.floor((new Date()).getTime() / 1000);
+        let start = now + (60 * 60 * 24 * 7 * 3);
+
+        // Set claim start time
+        await scenarioSetClaimStart({
+            claimStart: start,
+            fromAddress: owner,
+        });
+
+    });
+
+
+    // Random account cannot set the claim start time
+    it(printTitle('random account', 'cannot set the claim start time'), async () => {
+
+        // Get claim start time, 3 weeks in future
+        let now = Math.floor((new Date()).getTime() / 1000);
+        let start = now + (60 * 60 * 24 * 7 * 3);
+
+        // Set claim start time
+        await assertThrows(scenarioSetClaimStart({
+            claimStart: start,
+            fromAddress: accounts[1],
+        }), 'Random account set the claim start time.');
+
     });
 
 
