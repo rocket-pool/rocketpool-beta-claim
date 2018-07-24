@@ -129,7 +129,8 @@ contract RocketBetaClaim {
     function setRplTotal(uint256 _rplTotal) public onlyOwner onlyBeforeClaimStart {
 
         // Check total is covered by contract balance
-        // :TODO:
+        uint256 rplBalance = tokenContract.balanceOf(address(this));
+        require(_rplTotal <= rplBalance);
 
         // Set total
         rplTotal = _rplTotal;

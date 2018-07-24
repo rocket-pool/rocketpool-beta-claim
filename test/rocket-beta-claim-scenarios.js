@@ -20,3 +20,19 @@ export async function scenarioSetClaimStart({claimStart, fromAddress}) {
     assert.equal(claimEndTime, claimStartTime + claimPeriod, 'Claim end time was not set correctly.');
 
 }
+
+
+// Set the RPL total claimable
+export async function scenarioSetRplTotal({rplTotal, fromAddress}) {
+    const rocketBetaClaim = await RocketBetaClaim.deployed();
+
+    // Set rpl total claimable
+    await rocketBetaClaim.setRplTotal(rplTotal, {from: fromAddress});
+
+    // Get the rpl total claimable
+    let rplTotalClaimable = parseInt(await rocketBetaClaim.rplTotal.call());
+
+    // Check the rpl total claimable
+    assert.equal(rplTotalClaimable, rplTotal, 'RPL total was not set correctly.');
+
+}
