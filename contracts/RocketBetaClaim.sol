@@ -39,7 +39,7 @@ contract RocketBetaClaim {
     bool public closed = false;
 
     // Participants
-    mapping(address => Participant) public participants;
+    mapping(address => Participant) private participants;
     address[] private participantAddresses;
 
     // The RPL token contract
