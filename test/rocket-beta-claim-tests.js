@@ -231,7 +231,7 @@ contract('RocketBetaClaim', (accounts) => {
         let remove = await rocketBetaClaim.participants.call(0);
 
         // Remove
-        await assertThrows(scenarioAddParticipant({
+        await assertThrows(scenarioRemoveParticipant({
             participantAddress: remove,
             fromAddress: accounts[1],
         }), 'Random account removed a participant.');
