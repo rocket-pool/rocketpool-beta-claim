@@ -44,6 +44,31 @@ export async function scenarioSetRplTotal({rplTotal, fromAddress}) {
 }
 
 
+// Add multiple participants
+export async function scenarioAddParticipants({participantAddresses, fromAddress}) {
+    const rocketBetaClaim = await RocketBetaClaim.deployed();
+
+    // Get participant info
+    let participantCount1 = parseInt(await rocketBetaClaim.getParticipantCount.call());
+    let participant0Exists1 = await rocketBetaClaim.getParticipantExists.call(participantAddresses[0]);
+    let participantNExists1 = await rocketBetaClaim.getParticipantExists.call(participantAddresses[participantAddresses.length - 1]);
+
+    // Add participants
+    await rocketBetaClaim.addParticipants(participantAddresses, {from: fromAddress});
+
+    // Get participant info
+    let participantCount2 = parseInt(await rocketBetaClaim.getParticipantCount.call());
+    let participant0Exists2 = await rocketBetaClaim.getParticipantExists.call(participantAddresses[0]);
+    let participantNExists2 = await rocketBetaClaim.getParticipantExists.call(participantAddresses[participantAddresses.length - 1]);
+
+    // Check participants were added
+    assert.isTrue(participant0Exists2, 'First participant was not added successfully.');
+    assert.isTrue(participantNExists2, 'Last participant was not added successfully.');
+    assert.equal(participantCount2, participantCount1 + participantAddresses.length, 'Participant count was not updated successfully.');
+
+}
+
+
 // Add a participant
 export async function scenarioAddParticipant({participantAddress, fromAddress}) {
     const rocketBetaClaim = await RocketBetaClaim.deployed();

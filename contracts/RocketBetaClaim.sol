@@ -89,7 +89,7 @@ contract RocketBetaClaim {
     /**
      * Construct
      */
-    constructor(address _tokenAddress, address[] participantAddresses) public {
+    constructor(address _tokenAddress) public {
 
         // Assign contract owner to deployer
         owner = msg.sender;
@@ -97,14 +97,6 @@ contract RocketBetaClaim {
         // Set claim period
         claimStart = now + claimStartDelay;
         claimEnd = claimStart + claimPeriod;
-
-        // Build participant array
-        for (uint pi = 0; pi < participantAddresses.length; ++pi) {
-            participantIndexes[participantAddresses[pi]] = participants.push(Participant({
-                account: participantAddresses[pi],
-                claimed: false
-            }));
-        }
 
         // Initialise the token contract
         tokenContract = ERC20(_tokenAddress);
@@ -204,6 +196,32 @@ contract RocketBetaClaim {
 
 
     /**
+     * Add multiple participants
+     * Approx. 148 participants can be added per tx within the 8 million block gas limit
+     */    
+    function addParticipants(address[] participantAddresses) public onlyOwner onlyBeforeClaimStart {
+
+        // Add participants
+        for (uint pi = 0; pi < participantAddresses.length; ++pi) {
+
+            // Check address is valid
+            require(participantAddresses[pi] != 0x0);
+
+            // Check not already added
+            require(participantIndexes[participantAddresses[pi]] == 0);
+
+            // Add and set index
+            participantIndexes[participantAddresses[pi]] = participants.push(Participant({
+                account: participantAddresses[pi],
+                claimed: false
+            }));
+
+        }
+
+    }
+
+
+    /**
      * Add/remove participants
      */
     function addParticipant(address _participant) public onlyOwner onlyBeforeClaimStart {
@@ -211,7 +229,7 @@ contract RocketBetaClaim {
         // Check address is valid
         require(_participant != 0x0);
 
-        // Cancel if already added
+        // Check not already added
         require(participantIndexes[_participant] == 0);
 
         // Add and set index
@@ -223,7 +241,7 @@ contract RocketBetaClaim {
     }
     function removeParticipant(address _participant) public onlyOwner onlyBeforeClaimStart {
 
-        // Cancel if not added
+        // Check already added
         require(participantIndexes[_participant] != 0);
 
         // Get current and last participant indexes
