@@ -191,24 +191,24 @@ contract('RocketBetaClaim', (accounts) => {
 
         // Remove from middle of list
         count = parseInt(await rocketBetaClaim.getParticipantCount.call());
-        let remove1 = await rocketBetaClaim.participants.call(Math.floor((count - 1) / 2));
+        let remove1 = await rocketBetaClaim.getParticipantAddress.call(Math.floor((count - 1) / 2));
         await scenarioRemoveParticipant({
-            participantAddress: remove1[0],
+            participantAddress: remove1,
             fromAddress: owner,
         });
 
         // Remove from end of list
         count = parseInt(await rocketBetaClaim.getParticipantCount.call());
-        let remove2 = await rocketBetaClaim.participants.call(count - 1);
+        let remove2 = await rocketBetaClaim.getParticipantAddress.call(count - 1);
         await scenarioRemoveParticipant({
-            participantAddress: remove2[0],
+            participantAddress: remove2,
             fromAddress: owner,
         });
 
         // Remove from start of list
-        let remove3 = await rocketBetaClaim.participants.call(0);
+        let remove3 = await rocketBetaClaim.getParticipantAddress.call(0);
         await scenarioRemoveParticipant({
-            participantAddress: remove3[0],
+            participantAddress: remove3,
             fromAddress: owner,
         });
 
@@ -228,11 +228,11 @@ contract('RocketBetaClaim', (accounts) => {
     it(printTitle('random account', 'cannot remove a participant'), async () => {
 
         // Get first participant
-        let remove = await rocketBetaClaim.participants.call(0);
+        let remove = await rocketBetaClaim.getParticipantAddress.call(0);
 
         // Remove
         await assertThrows(scenarioRemoveParticipant({
-            participantAddress: remove[0],
+            participantAddress: remove,
             fromAddress: accounts[1],
         }), 'Random account removed a participant.');
 
@@ -328,11 +328,11 @@ contract('RocketBetaClaim', (accounts) => {
     it(printTitle('owner', 'cannot remove a participant after claim start'), async () => {
 
         // Get first participant
-        let remove = await rocketBetaClaim.participants.call(0);
+        let remove = await rocketBetaClaim.getParticipantAddress.call(0);
 
         // Remove
         await assertThrows(scenarioRemoveParticipant({
-            participantAddress: remove[0],
+            participantAddress: remove,
             fromAddress: owner,
         }), 'Owner removed a participant after claim start.');
 

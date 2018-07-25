@@ -138,6 +138,14 @@ contract RocketBetaClaim {
 
 
     /**
+     * Get participant address at index
+     */
+    function getParticipantAddress(uint256 _index) public view returns (address account) {
+        return participants[_index].account;
+    }
+
+
+    /**
      * Get RPL claim amount per participant
      */
     function getClaimAmount() public view returns (uint256 amount) {
