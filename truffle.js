@@ -31,6 +31,7 @@ module.exports = {
       network_id: '*', // Match any network id
       rocketPoolTokenAddress: null, // Rocket Pool Token contract address
       dummyRocketPoolToken: true, // Deploy dummy Rocket Pool Token contract
+      gas: 8000000,
     },
 
     // Local dev network
