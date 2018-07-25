@@ -20,6 +20,8 @@ contract RocketBetaClaim {
     struct Participant {
         address account;
         bool claimed;
+        uint256 index;
+        bool exists;
     }
 
 
@@ -37,8 +39,8 @@ contract RocketBetaClaim {
     bool public closed = false;
 
     // Participants
-    Participant[] public participants;
-    mapping(address => uint256) private participantIndexes; // Offset by +1
+    mapping(address => Participant) public participants;
+    address[] private participantAddresses;
 
     // The RPL token contract
     ERC20 tokenContract = ERC20(0);
@@ -64,7 +66,7 @@ contract RocketBetaClaim {
      * Can only be called by a participant
      */
     modifier onlyParticipant() {
-        require(participantIndexes[msg.sender] != 0);
+        require(participants[msg.sender].exists == true);
         _;
     }
 
@@ -108,7 +110,7 @@ contract RocketBetaClaim {
      * Check if a participant exists
      */
     function getParticipantExists(address _participant) public view returns (bool exists) {
-        return (participantIndexes[_participant] != 0);
+        return (participants[_participant].exists == true);
     }
 
 
@@ -116,8 +118,7 @@ contract RocketBetaClaim {
      * Check if a participant has already claimed their reward
      */
     function getParticipantClaimed(address _participant) public view returns (bool claimed) {
-        if (participantIndexes[_participant] == 0) return false;
-        return (participants[participantIndexes[_participant] - 1].claimed == true);
+        return (participants[_participant].claimed == true);
     }
 
 
@@ -125,7 +126,7 @@ contract RocketBetaClaim {
      * Get participant count
      */
     function getParticipantCount() public view returns (uint256 count) {
-        return participants.length;
+        return participantAddresses.length;
     }
 
 
@@ -133,7 +134,7 @@ contract RocketBetaClaim {
      * Get participant address at index
      */
     function getParticipantAddress(uint256 _index) public view returns (address account) {
-        return participants[_index].account;
+        return participantAddresses[_index];
     }
 
 
@@ -141,8 +142,8 @@ contract RocketBetaClaim {
      * Get RPL claim amount per participant
      */
     function getClaimAmount() public view returns (uint256 amount) {
-        if (participants.length == 0) return 0;
-        return rplTotal / participants.length;
+        if (participantAddresses.length == 0) return 0;
+        return rplTotal / participantAddresses.length;
     }
 
 
@@ -156,14 +157,14 @@ contract RocketBetaClaim {
         require(!closed);
 
         // Check participant has not already claimed
-        require(participants[participantIndexes[msg.sender] - 1].claimed == false);
+        require(participants[msg.sender].claimed == false);
 
         // Transfer RPL claim amount
         uint256 claimAmount = getClaimAmount();
         require(tokenContract.transfer(msg.sender, claimAmount) == true);
 
         // Mark participant as claimed
-        participants[participantIndexes[msg.sender] - 1].claimed = true;
+        participants[msg.sender].claimed = true;
 
         // Emit withdrawal event
         emit Withdrawal(msg.sender, claimAmount, now);
@@ -197,24 +198,27 @@ contract RocketBetaClaim {
 
     /**
      * Add multiple participants
-     * Approx. 148 participants can be added per tx within the 8 million block gas limit
+     * Approx. 84 participants can be added per tx within the 8 million block gas limit
      */    
-    function addParticipants(address[] participantAddresses) public onlyOwner onlyBeforeClaimStart {
+    function addParticipants(address[] addressList) public onlyOwner onlyBeforeClaimStart {
 
         // Add participants
-        for (uint pi = 0; pi < participantAddresses.length; ++pi) {
+        for (uint pi = 0; pi < addressList.length; ++pi) {
 
             // Check address is valid
-            require(participantAddresses[pi] != 0x0);
+            require(addressList[pi] != 0x0);
 
             // Check not already added
-            require(participantIndexes[participantAddresses[pi]] == 0);
+            require(participants[addressList[pi]].exists == false);
 
-            // Add and set index
-            participantIndexes[participantAddresses[pi]] = participants.push(Participant({
-                account: participantAddresses[pi],
-                claimed: false
-            }));
+            // Add participant and address
+            participants[addressList[pi]] = Participant({
+                account: addressList[pi],
+                claimed: false,
+                index: participantAddresses.length,
+                exists: true
+            });
+            participantAddresses.push(addressList[pi]);
 
         }
 
@@ -230,36 +234,42 @@ contract RocketBetaClaim {
         require(_participant != 0x0);
 
         // Check not already added
-        require(participantIndexes[_participant] == 0);
+        require(participants[_participant].exists == false);
 
-        // Add and set index
-        participantIndexes[_participant] = participants.push(Participant({
+        // Add participant and address
+        participants[_participant] = Participant({
             account: _participant,
-            claimed: false
-        }));
+            claimed: false,
+            index: participantAddresses.length,
+            exists: true
+        });
+        participantAddresses.push(_participant);
 
     }
     function removeParticipant(address _participant) public onlyOwner onlyBeforeClaimStart {
 
         // Check already added
-        require(participantIndexes[_participant] != 0);
+        require(participants[_participant].exists == true);
 
-        // Get current and last participant indexes
-        uint256 participantIndex = participantIndexes[_participant] - 1;
-        uint256 lastIndex = participants.length - 1;
+        // Get current and last participant address indexes
+        uint256 currentIndex = participants[_participant].index;
+        uint256 lastIndex = participantAddresses.length - 1;
 
-        // Get last participant
-        Participant memory last = participants[lastIndex];
+        // Get last participant address
+        address lastAddress = participantAddresses[lastIndex];
 
-        // Move last participant to current index
-        if (participantIndex != lastIndex) {
-            participants[participantIndex] = last;
-            participantIndexes[last.account] = participantIndex + 1;
+        // Move last participant address to current index
+        if (currentIndex != lastIndex) {
+            participantAddresses[currentIndex] = participants[lastAddress].account;
+            participants[lastAddress].index = currentIndex;
         }
 
-        // Unset current participant index and truncate array
-        participantIndexes[_participant] = 0;
-        participants.length -= 1;
+        // Delete current participant and truncate address array
+        participants[_participant].account = 0x0;
+        participants[_participant].claimed = false;
+        participants[_participant].index = 0;
+        participants[_participant].exists = false;
+        participantAddresses.length -= 1;
 
     }
 
