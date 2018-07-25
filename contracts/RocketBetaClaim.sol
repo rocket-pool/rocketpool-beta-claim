@@ -16,6 +16,13 @@ contract RocketBetaClaim {
     using SafeMath for uint;
 
 
+    // Participant
+    struct Participant {
+        address account;
+        bool claimed;
+    }
+
+
     // Contract owner
     address public owner;
 
@@ -30,9 +37,8 @@ contract RocketBetaClaim {
     bool public closed = false;
 
     // Participants
-    address[] public participants;
+    Participant[] public participants;
     mapping(address => uint256) private participantIndexes; // Offset by +1
-    mapping(address => bool) private participantClaimed;
 
     // The RPL token contract
     ERC20 tokenContract = ERC20(0);
@@ -83,7 +89,7 @@ contract RocketBetaClaim {
     /**
      * Construct
      */
-    constructor(address _tokenAddress, address[] participantList) public {
+    constructor(address _tokenAddress, address[] participantAddresses) public {
 
         // Assign contract owner to deployer
         owner = msg.sender;
@@ -93,8 +99,11 @@ contract RocketBetaClaim {
         claimEnd = claimStart + claimPeriod;
 
         // Build participant array
-        for (uint pi = 0; pi < participantList.length; ++pi) {
-            participantIndexes[participantList[pi]] = participants.push(participantList[pi]);
+        for (uint pi = 0; pi < participantAddresses.length; ++pi) {
+            participantIndexes[participantAddresses[pi]] = participants.push(Participant({
+                account: participantAddresses[pi],
+                claimed: false
+            }));
         }
 
         // Initialise the token contract
@@ -115,7 +124,8 @@ contract RocketBetaClaim {
      * Check if a participant has already claimed their reward
      */
     function getParticipantClaimed(address _participant) public view returns (bool claimed) {
-        return (participantClaimed[_participant] == true);
+        if (participantIndexes[_participant] == 0) return false;
+        return (participants[participantIndexes[_participant] - 1].claimed == true);
     }
 
 
@@ -146,14 +156,14 @@ contract RocketBetaClaim {
         require(!closed);
 
         // Check participant has not already claimed
-        require(participantClaimed[msg.sender] == false);
+        require(participants[participantIndexes[msg.sender] - 1].claimed == false);
 
         // Transfer RPL claim amount
         uint256 claimAmount = getClaimAmount();
         require(tokenContract.transfer(msg.sender, claimAmount) == true);
 
         // Mark participant as claimed
-        participantClaimed[msg.sender] = true;
+        participants[participantIndexes[msg.sender] - 1].claimed = true;
 
         // Emit withdrawal event
         emit Withdrawal(msg.sender, claimAmount, now);
@@ -197,7 +207,10 @@ contract RocketBetaClaim {
         require(participantIndexes[_participant] == 0);
 
         // Add and set index
-        participantIndexes[_participant] = participants.push(_participant);
+        participantIndexes[_participant] = participants.push(Participant({
+            account: _participant,
+            claimed: false
+        }));
 
     }
     function removeParticipant(address _participant) public onlyOwner onlyBeforeClaimStart {
@@ -210,12 +223,12 @@ contract RocketBetaClaim {
         uint256 lastIndex = participants.length - 1;
 
         // Get last participant
-        address last = participants[lastIndex];
+        Participant memory last = participants[lastIndex];
 
         // Move last participant to current index
         if (participantIndex != lastIndex) {
             participants[participantIndex] = last;
-            participantIndexes[last] = participantIndex + 1;
+            participantIndexes[last.account] = participantIndex + 1;
         }
 
         // Unset current participant index and truncate array

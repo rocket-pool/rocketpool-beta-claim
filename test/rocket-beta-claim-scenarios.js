@@ -76,7 +76,7 @@ export async function scenarioRemoveParticipant({participantAddress, fromAddress
     for (let pi = 0; pi < count; ++pi) participants.push(await rocketBetaClaim.participants.call(pi));
 
     // Get expected final participant list
-    let expectedParticipants = participants.filter(el => (el != participantAddress));
+    let expectedParticipants = participants.filter(el => (el[0] != participantAddress));
 
     // Get participant info
     let participantCount1 = parseInt(await rocketBetaClaim.getParticipantCount.call());
@@ -95,7 +95,7 @@ export async function scenarioRemoveParticipant({participantAddress, fromAddress
 
     // Check other participants are unaffected
     for (let pi = 0; pi < expectedParticipants.length; ++pi) {
-        let exists = await rocketBetaClaim.getParticipantExists.call(expectedParticipants[pi]);
+        let exists = await rocketBetaClaim.getParticipantExists.call(expectedParticipants[pi][0]);
         assert.isTrue(exists, 'Other participant was affected.');
     }
 

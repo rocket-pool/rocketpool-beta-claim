@@ -193,7 +193,7 @@ contract('RocketBetaClaim', (accounts) => {
         count = parseInt(await rocketBetaClaim.getParticipantCount.call());
         let remove1 = await rocketBetaClaim.participants.call(Math.floor((count - 1) / 2));
         await scenarioRemoveParticipant({
-            participantAddress: remove1,
+            participantAddress: remove1[0],
             fromAddress: owner,
         });
 
@@ -201,14 +201,14 @@ contract('RocketBetaClaim', (accounts) => {
         count = parseInt(await rocketBetaClaim.getParticipantCount.call());
         let remove2 = await rocketBetaClaim.participants.call(count - 1);
         await scenarioRemoveParticipant({
-            participantAddress: remove2,
+            participantAddress: remove2[0],
             fromAddress: owner,
         });
 
         // Remove from start of list
         let remove3 = await rocketBetaClaim.participants.call(0);
         await scenarioRemoveParticipant({
-            participantAddress: remove3,
+            participantAddress: remove3[0],
             fromAddress: owner,
         });
 
@@ -232,7 +232,7 @@ contract('RocketBetaClaim', (accounts) => {
 
         // Remove
         await assertThrows(scenarioRemoveParticipant({
-            participantAddress: remove,
+            participantAddress: remove[0],
             fromAddress: accounts[1],
         }), 'Random account removed a participant.');
 
@@ -332,7 +332,7 @@ contract('RocketBetaClaim', (accounts) => {
 
         // Remove
         await assertThrows(scenarioRemoveParticipant({
-            participantAddress: remove,
+            participantAddress: remove[0],
             fromAddress: owner,
         }), 'Owner removed a participant after claim start.');
 
