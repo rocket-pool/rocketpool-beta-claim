@@ -5,7 +5,7 @@ const Web3 = require('web3');
 const DummyRocketPoolToken = artifacts.require('./contract/DummyRocketPoolToken');
 const RocketBetaClaim = artifacts.require('./contract/RocketBetaClaim');
 
-// Seed RPD contract
+// Seed claim contract
 module.exports = async (done) => {
 
     // Get command-line arguments (remove args from truffle)
@@ -24,8 +24,8 @@ module.exports = async (done) => {
 
     // Initialise dummy rocket pool token supply
     let tokenSupply = Web3.utils.toWei(seedAmountRpl, 'ether');
-    await dummyRocketPoolToken.mint(web3.eth.coinbase, tokenSupply, {from: web3.eth.coinbase});
-    await dummyRocketPoolToken.transfer(rocketBetaClaim.address, tokenSupply, {from: web3.eth.coinbase});
+    await dummyRocketPoolToken.mint(web3.eth.coinbase, tokenSupply);
+    await dummyRocketPoolToken.transfer(rocketBetaClaim.address, tokenSupply);
 
     // Set claim contract RPL total
     await rocketBetaClaim.setRplTotal(tokenSupply);
