@@ -14,7 +14,7 @@ module.exports = async (done) => {
     await rocketBetaClaim.close();
 
     // Complete
-    done('Claim contract closed successfully: ' + args.join(', '));
+    done('Claim contract closed successfully.');
 
 };
 
