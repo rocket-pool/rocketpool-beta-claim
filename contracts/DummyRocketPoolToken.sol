@@ -1,9 +1,9 @@
 pragma solidity ^0.4.19;
 
 
-import "./Ownable.sol";
-import "./StandardToken.sol";
-import "../lib/SafeMath.sol";
+import "./contract/Ownable.sol";
+import "./contract/StandardToken.sol";
+import "./lib/SafeMath.sol";
 
 
 /// @title Dummy Rocket Pool Token (RPL) contract
