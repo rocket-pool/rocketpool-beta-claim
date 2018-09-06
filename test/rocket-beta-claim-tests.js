@@ -225,10 +225,10 @@ contract('RocketBetaClaim', (accounts) => {
         let start = now + (60 * 60 * 24 * 7 * 3);
 
         // Set claim start time
-        await scenarioSetClaimStart({
+        await assertThrows(scenarioSetClaimStart({
             claimStart: start,
             fromAddress: accounts[1],
-        });
+        }), 'Random account set the claim start time.');
 
     });
 
