@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.5.0;
 
 import "./interface/ERC20.sol";
 import './lib/SafeMath.sol';
@@ -200,13 +200,13 @@ contract RocketBetaClaim {
      * Add multiple participants
      * Approx. 84 participants can be added per tx within the 8 million block gas limit
      */    
-    function addParticipants(address[] addressList) public onlyOwner onlyBeforeClaimStart {
+    function addParticipants(address[] memory addressList) public onlyOwner onlyBeforeClaimStart {
 
         // Add participants
         for (uint pi = 0; pi < addressList.length; ++pi) {
 
             // Check address is valid
-            require(addressList[pi] != 0x0);
+            require(addressList[pi] != address(0x0));
 
             // Check not already added
             require(participants[addressList[pi]].exists == false);
@@ -231,7 +231,7 @@ contract RocketBetaClaim {
     function addParticipant(address _participant) public onlyOwner onlyBeforeClaimStart {
 
         // Check address is valid
-        require(_participant != 0x0);
+        require(_participant != address(0x0));
 
         // Check not already added
         require(participants[_participant].exists == false);
@@ -265,7 +265,7 @@ contract RocketBetaClaim {
         }
 
         // Delete current participant and truncate address array
-        participants[_participant].account = 0x0;
+        participants[_participant].account = address(0x0);
         participants[_participant].claimed = false;
         participants[_participant].index = 0;
         participants[_participant].exists = false;
