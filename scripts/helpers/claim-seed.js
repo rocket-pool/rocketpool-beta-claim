@@ -24,8 +24,7 @@ module.exports = async (done) => {
 
     // Initialise dummy rocket pool token supply
     let tokenSupply = Web3.utils.toWei(seedAmountRpl, 'ether');
-    await dummyRocketPoolToken.mint(web3.eth.coinbase, tokenSupply);
-    await dummyRocketPoolToken.transfer(rocketBetaClaim.address, tokenSupply);
+    await dummyRocketPoolToken.mint(rocketBetaClaim.address, tokenSupply);
 
     // Set claim contract RPL total
     await rocketBetaClaim.setRplTotal(tokenSupply);
