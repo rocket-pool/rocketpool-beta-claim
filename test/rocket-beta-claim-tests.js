@@ -164,7 +164,7 @@ contract('RocketBetaClaim', (accounts) => {
 
 
     // The owner
-    const owner = web3.eth.coinbase;
+    const owner = accounts[0];
 
     // Participant accounts
     const participant1 = accounts[1];
@@ -189,7 +189,7 @@ contract('RocketBetaClaim', (accounts) => {
         dummyRocketPoolToken = await DummyRocketPoolToken.deployed();
 
         // Initialise dummy rocket pool token supply
-        let tokenSupply = web3.toWei('500', 'ether');
+        let tokenSupply = web3.utils.toWei('500', 'ether');
         await dummyRocketPoolToken.mint(owner, tokenSupply, {from: owner});
         await dummyRocketPoolToken.transfer(rocketBetaClaim.address, tokenSupply, {from: owner});
 
@@ -237,7 +237,7 @@ contract('RocketBetaClaim', (accounts) => {
     it(printTitle('owner', 'can set the RPL total claimable'), async () => {
 
         // Get the claim contract's RPL balance
-        let claimRplBalance = parseInt(await dummyRocketPoolToken.balanceOf(rocketBetaClaim.address));
+        let claimRplBalance = await dummyRocketPoolToken.balanceOf(rocketBetaClaim.address);
 
         // Set RPL total claimable
         await scenarioSetRplTotal({
@@ -252,11 +252,11 @@ contract('RocketBetaClaim', (accounts) => {
     it(printTitle('owner', 'cannot set the RPL total claimable higher than the beta claim\'s RPL balance'), async () => {
 
         // Get the claim contract's RPL balance
-        let claimRplBalance = parseInt(await dummyRocketPoolToken.balanceOf(rocketBetaClaim.address));
+        let claimRplBalance = await dummyRocketPoolToken.balanceOf(rocketBetaClaim.address);
 
         // Set RPL total claimable
         await assertThrows(scenarioSetRplTotal({
-            rplTotal: claimRplBalance + parseInt(web3.toWei('1', 'ether')),
+            rplTotal: claimRplBalance.add(web3.utils.toBN(web3.utils.toWei('1', 'ether'))),
             fromAddress: owner,
         }), 'Owner set the RPL total claimable higher than the beta claim\'s RPL balance.');
 
@@ -267,7 +267,7 @@ contract('RocketBetaClaim', (accounts) => {
     it(printTitle('random account', 'cannot set the RPL total claimable'), async () => {
 
         // Get the claim contract's RPL balance
-        let claimRplBalance = parseInt(await dummyRocketPoolToken.balanceOf(rocketBetaClaim.address));
+        let claimRplBalance = await dummyRocketPoolToken.balanceOf(rocketBetaClaim.address);
 
         // Set RPL total claimable
         await assertThrows(scenarioSetRplTotal({
@@ -510,7 +510,7 @@ contract('RocketBetaClaim', (accounts) => {
     it(printTitle('owner', 'cannot set the RPL total claimable after claim start'), async () => {
 
         // Get the claim contract's RPL balance
-        let claimRplBalance = parseInt(await dummyRocketPoolToken.balanceOf(rocketBetaClaim.address));
+        let claimRplBalance = await dummyRocketPoolToken.balanceOf(rocketBetaClaim.address);
 
         // Set RPL total claimable
         await assertThrows(scenarioSetRplTotal({
@@ -613,8 +613,8 @@ contract('RocketBetaClaim', (accounts) => {
     it(printTitle('owner', 'can close the beta claim'), async () => {
 
         // Check for remaining RPL balance
-        let rplBalance = parseInt(await dummyRocketPoolToken.balanceOf(rocketBetaClaim.address));
-        assert.isAbove(rplBalance, 0, 'Pre-check failed - beta claim contract has no remaining RPL balance.');
+        let rplBalance = await dummyRocketPoolToken.balanceOf(rocketBetaClaim.address);
+        assert.isTrue(rplBalance.gt(web3.utils.toBN(0)), 'Pre-check failed - beta claim contract has no remaining RPL balance.');
 
         // Close
         await scenarioClose({
