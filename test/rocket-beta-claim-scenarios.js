@@ -170,8 +170,8 @@ export async function scenarioClose({fromAddress}) {
 
     // Check close was successful
     assert.isTrue(closed2, 'Beta claim was not closed successfully.');
-    assert.equal(claimBalance2.eq(web3.utils.toBN(0)), 'Contract\'s RPL balance was not emptied.');
-    assert.equal(ownerBalance2.eq(ownerBalance1.add(claimBalance1)), 'Owner\'s RPL balance was not updated correctly.');
+    assert.isTrue(claimBalance2.eq(web3.utils.toBN(0)), 'Contract\'s RPL balance was not emptied.');
+    assert.isTrue(ownerBalance2.eq(ownerBalance1.add(claimBalance1)), 'Owner\'s RPL balance was not updated correctly.');
 
 }
 
