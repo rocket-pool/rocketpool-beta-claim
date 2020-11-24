@@ -12,22 +12,17 @@ import "./interface/ERC20.sol";
 contract RocketBatchTransfer {
 
 
-    // The RPL token contract
-    ERC20 tokenContract = ERC20(0);
-
-
     /**
      * Construct
      */
-    constructor(address _tokenAddress) {
-        tokenContract = ERC20(_tokenAddress);
-    }
+    constructor() {}
 
 
     /**
-     * Transfer a single amount of tokens to multiple addresses
+     * Transfer the same amount of a token to multiple addresses
      */
-    function transfer(address fromAddress, address[] calldata toAddresses, uint256 amount) public {
+    function transfer(address tokenAddress, address fromAddress, address[] calldata toAddresses, uint256 amount) public {
+        ERC20 tokenContract = ERC20(tokenAddress);
         for (uint256 ai = 0; ai < toAddresses.length; ++ai) {
             require(tokenContract.transferFrom(fromAddress, toAddresses[ai], amount));
         }
@@ -35,9 +30,10 @@ contract RocketBatchTransfer {
 
 
     /**
-     * Transfer different amounts of tokens to multiple addresses
+     * Transfer different amounts of a token to multiple addresses
      */
-    function transfer(address fromAddress, address[] calldata toAddresses, uint256[] calldata amounts) public {
+    function transfer(address tokenAddress, address fromAddress, address[] calldata toAddresses, uint256[] calldata amounts) public {
+        ERC20 tokenContract = ERC20(tokenAddress);
         require(toAddresses.length == amounts.length);
         for (uint256 ai = 0; ai < toAddresses.length; ++ai) {
             require(tokenContract.transferFrom(fromAddress, toAddresses[ai], amounts[ai]));
