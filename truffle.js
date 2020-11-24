@@ -36,7 +36,7 @@ module.exports = {
       network_id: '*', // Match any network id
       rocketPoolTokenAddress: null, // Rocket Pool Token contract address
       dummyRocketPoolToken: true, // Deploy dummy Rocket Pool Token contract
-      gas: 8000000,
+      gas: 12000000,
     },
 
     // Local dev network
@@ -46,6 +46,7 @@ module.exports = {
       network_id: '*', // Match any network id
       rocketPoolTokenAddress: null, // Rocket Pool Token contract address
       dummyRocketPoolToken: true, // Deploy dummy Rocket Pool Token contract
+      gas: 12000000,
     },
 
     // Rinkeby test network
@@ -55,6 +56,7 @@ module.exports = {
       network_id: '4', // Rinkeby
       rocketPoolTokenAddress: null, // Rocket Pool Token contract address
       dummyRocketPoolToken: true, // Deploy dummy Rocket Pool Token contract
+      gas: 12000000,
     }
 
   },
