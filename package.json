@@ -11,7 +11,7 @@
     "console": "truffle console",
     "compile": "truffle compile",
     "migrate": "truffle migrate",
-    "test": "scripts/test.sh test/rocket-beta-claim-tests.js"
+    "test": "scripts/test.sh test/rocket-batch-transfer-tests.js"
   },
   "devDependencies": {
     "babel-polyfill": "^6.26.0",
