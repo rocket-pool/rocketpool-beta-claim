@@ -1,4 +1,6 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.7.5;
+
+// SPDX-License-Identifier: GPL-3.0-only
 
 
 import "../interface/ERC20.sol";
@@ -8,14 +10,14 @@ import "../lib/SafeMath.sol";
 /**
  * @title Standard ERC20 token implementation
  */
-contract StandardToken is ERC20 {
+abstract contract StandardToken is ERC20 {
 
     using SafeMath for uint;
 
     mapping (address => uint256) balances;
     mapping (address => mapping (address => uint256)) allowed;
 
-    function transfer(address _to, uint256 _value) public returns (bool success) {
+    function transfer(address _to, uint256 _value) public override returns (bool success) {
         if (balances[msg.sender] >= _value && _value > 0) {
             balances[msg.sender] = balances[msg.sender].sub(_value);
             balances[_to] = balances[_to].add(_value);
@@ -26,7 +28,7 @@ contract StandardToken is ERC20 {
         }
     }
 
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
+    function transferFrom(address _from, address _to, uint256 _value) public override returns (bool success) {
         if (balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
             balances[_to] = balances[_to].add(_value);
             balances[_from] = balances[_from].sub(_value);
@@ -38,17 +40,17 @@ contract StandardToken is ERC20 {
         }
     }
 
-    function approve(address _spender, uint256 _value) public returns (bool success) {
+    function approve(address _spender, uint256 _value) public override returns (bool success) {
         allowed[msg.sender][_spender] = _value;
         emit Approval(msg.sender, _spender, _value);
         return true;
     }
 
-    function balanceOf(address _owner) public view returns (uint256 balance) {
+    function balanceOf(address _owner) public override view returns (uint256 balance) {
         return balances[_owner];
     }
 
-    function allowance(address _owner, address _spender) public view returns (uint256 remaining) {
+    function allowance(address _owner, address _spender) public override view returns (uint256 remaining) {
         return allowed[_owner][_spender];
     }
 

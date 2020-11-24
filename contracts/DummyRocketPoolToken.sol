@@ -1,4 +1,6 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.7.5;
+
+// SPDX-License-Identifier: GPL-3.0-only
 
 
 import "./contract/Ownable.sol";
@@ -36,7 +38,7 @@ contract DummyRocketPoolToken is StandardToken, Ownable {
     /**** Methods ***********/
 
     /// @dev RPL Token Init
-    constructor() public {}
+    constructor() {}
 
 
     // @dev Mint the Rocket Pool Tokens (RPL)

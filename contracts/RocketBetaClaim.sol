@@ -1,4 +1,6 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.7.5;
+
+// SPDX-License-Identifier: GPL-3.0-only
 
 import "./interface/ERC20.sol";
 import './lib/SafeMath.sol';
@@ -75,15 +77,15 @@ contract RocketBetaClaim {
      * Claim period modifiers
      */
     modifier onlyBeforeClaimStart() {
-        require(now < claimStart);
+        require(block.timestamp < claimStart);
         _;
     }
     modifier onlyAfterClaimStart() {
-        require(now >= claimStart);
+        require(block.timestamp >= claimStart);
         _;
     }
     modifier onlyAfterClaimEnd() {
-        require(now >= claimEnd);
+        require(block.timestamp >= claimEnd);
         _;
     }
 
@@ -91,13 +93,13 @@ contract RocketBetaClaim {
     /**
      * Construct
      */
-    constructor(address _tokenAddress) public {
+    constructor(address _tokenAddress) {
 
         // Assign contract owner to deployer
         owner = msg.sender;
 
         // Set claim period
-        claimStart = now + claimStartDelay;
+        claimStart = block.timestamp + claimStartDelay;
         claimEnd = claimStart + claimPeriod;
 
         // Initialise the token contract
@@ -167,7 +169,7 @@ contract RocketBetaClaim {
         participants[msg.sender].claimed = true;
 
         // Emit withdrawal event
-        emit Withdrawal(msg.sender, claimAmount, now);
+        emit Withdrawal(msg.sender, claimAmount, block.timestamp);
 
     }
 
@@ -269,7 +271,7 @@ contract RocketBetaClaim {
         participants[_participant].claimed = false;
         participants[_participant].index = 0;
         participants[_participant].exists = false;
-        participantAddresses.length -= 1;
+        participantAddresses.pop();
 
     }
 
@@ -292,7 +294,7 @@ contract RocketBetaClaim {
         closed = true;
 
         // Emit close event
-        emit Close(owner, rplBalance, now);
+        emit Close(owner, rplBalance, block.timestamp);
 
     }
 

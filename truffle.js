@@ -22,6 +22,11 @@ require('babel-polyfill');
 // Truffle config
 module.exports = {
   web3: Web3,
+  compilers: {
+    solc: {
+      version: "0.7.5",
+    },
+  },
   networks: {
 
     // Ganache

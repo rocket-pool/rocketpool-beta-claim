@@ -1,4 +1,6 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.7.5;
+
+// SPDX-License-Identifier: GPL-3.0-only
 
 
 /**
@@ -8,7 +10,7 @@ pragma solidity ^0.5.0;
  *
  * Contract source taken from Open Zeppelin: https://github.com/OpenZeppelin/zeppelin-solidity/blob/v1.4.0/contracts/ownership/Ownable.sol
  */
-contract Ownable {
+abstract contract Ownable {
     address public owner;
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -17,7 +19,7 @@ contract Ownable {
     * @dev The Ownable constructor sets the original `owner` of the contract to the sender
     * account.
     */
-    constructor() public {
+    constructor() {
       owner = msg.sender;
     }
 
