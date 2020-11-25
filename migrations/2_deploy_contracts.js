@@ -3,7 +3,7 @@ const config = require('../truffle.js');
 
 // Artifacts
 const DummyRocketPoolToken = artifacts.require('./DummyRocketPoolToken.sol');
-const RocketBetaClaim = artifacts.require('./RocketBetaClaim.sol');
+const RocketBatchTransfer = artifacts.require('./RocketBatchTransfer.sol');
 
 // Deploy
 module.exports = function(deployer, network) {
@@ -14,13 +14,13 @@ module.exports = function(deployer, network) {
     // Deploying dummy Rocket Pool Token contract
     if (networkConfig.dummyRocketPoolToken) {
         return deployer.deploy(DummyRocketPoolToken).then(() => {
-            return deployer.deploy(RocketBetaClaim, DummyRocketPoolToken.address);
+            return deployer.deploy(RocketBatchTransfer);
         });
     }
 
     // Using existing Rocket Pool Token contract
     else {
-        return deployer.deploy(RocketBetaClaim, networkConfig.rocketPoolTokenAddress);
+        return deployer.deploy(RocketBatchTransfer);
     }
 
 };
