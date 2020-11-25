@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 import { printTitle, assertThrows } from './utils';
 
 
@@ -6,23 +7,36 @@ const DummyRocketPoolToken = artifacts.require('./contract/DummyRocketPoolToken.
 const RocketBatchTransfer = artifacts.require('./contract/RocketBatchTransfer.sol');
 
 
+const recipientCount = 375;
+const amountRecipientCount = 360;
+
+const recipients = [];
+for (let i = 0; i < recipientCount; ++i) {
+    const addressBytes = crypto.randomBytes(20);
+    recipients.push('0x' + addressBytes.toString('hex'));
+}
+
+const amountRecipients = [];
+for (let i = 0; i < amountRecipientCount; ++i) {
+    const addressBytes = crypto.randomBytes(20);
+    amountRecipients.push('0x' + addressBytes.toString('hex'));
+}
+
+const recipientAmounts = [];
+for (let i = 0; i < amountRecipientCount; ++i) {
+    const ethAmount = Math.round(Math.random() * 500) / 100;
+    recipientAmounts.push(web3.utils.toBN(web3.utils.toWei(ethAmount.toString(), 'ether')));
+}
+const totalrecipientAmount = recipientAmounts.reduce((acc, val) => acc.add(val), web3.utils.toBN(0));
+
+
 // Start the tests
 contract('RocketBatchTransfer', (accounts) => {
 
 
-    // The owner
+    // Addresses
     const owner = accounts[0];
-    const random = accounts[9];
-
-    // Token recipients
-    const recipient1 = accounts[1];
-    const recipient2 = accounts[2];
-    const recipient3 = accounts[3];
-    const recipient4 = accounts[4];
-    const recipient5 = accounts[5];
-    const recipient6 = accounts[6];
-    const recipient7 = accounts[7];
-    const recipient8 = accounts[8];
+    const random = accounts[1];
 
     // Contract dependencies
     let rocketBatchTransfer;
@@ -37,7 +51,7 @@ contract('RocketBatchTransfer', (accounts) => {
         dummyRocketPoolToken = await DummyRocketPoolToken.deployed();
 
         // Mint RPL token supply to owner address
-        const tokenSupply = web3.utils.toWei('1000', 'ether');
+        const tokenSupply = web3.utils.toWei('1000000', 'ether');
         await dummyRocketPoolToken.mint(owner, tokenSupply, {from: owner});
 
     });
@@ -45,16 +59,6 @@ contract('RocketBatchTransfer', (accounts) => {
 
     it(printTitle('owner', 'cannot send the same amount of a token to multiple addresses without approval'), async () => {
 
-        const recipients = [
-            recipient1,
-            recipient2,
-            recipient3,
-            recipient4,
-            recipient5,
-            recipient6,
-            recipient7,
-            recipient8,
-        ];
         const amount = web3.utils.toBN(web3.utils.toWei('1', 'ether'));
 
         await assertThrows(
@@ -73,16 +77,6 @@ contract('RocketBatchTransfer', (accounts) => {
 
     it(printTitle('random account', 'cannot send the same amount of a token to multiple addresses'), async () => {
 
-        const recipients = [
-            recipient1,
-            recipient2,
-            recipient3,
-            recipient4,
-            recipient5,
-            recipient6,
-            recipient7,
-            recipient8,
-        ];
         const amount = web3.utils.toBN(web3.utils.toWei('1', 'ether'));
 
         await dummyRocketPoolToken.approve(rocketBatchTransfer.address, amount.mul(web3.utils.toBN(recipients.length)), {from: owner});
@@ -96,56 +90,29 @@ contract('RocketBatchTransfer', (accounts) => {
 
     it(printTitle('owner', 'can send the same amount of a token to multiple addresses'), async () => {
 
-        const recipients = [
-            recipient1,
-            recipient2,
-            recipient3,
-            recipient4,
-            recipient5,
-            recipient6,
-            recipient7,
-            recipient8,
-        ];
         const amount = web3.utils.toBN(web3.utils.toWei('1', 'ether'));
 
         await dummyRocketPoolToken.approve(rocketBatchTransfer.address, amount.mul(web3.utils.toBN(recipients.length)), {from: owner});
-        await rocketBatchTransfer.transferTokenAmount(dummyRocketPoolToken.address, recipients, amount, {from: owner});
+        let result = await rocketBatchTransfer.transferTokenAmount(dummyRocketPoolToken.address, recipients, amount, {from: owner});
+
+        console.log('-----');
+        console.log('Recipients:', recipients.length);
+        console.log('Gas used:', result.receipt.gasUsed);
+        console.log('-----');
 
     });
 
 
     it(printTitle('owner', 'cannot send different amounts of a token to multiple addresses without approval'), async () => {
 
-        const recipients = [
-            recipient1,
-            recipient2,
-            recipient3,
-            recipient4,
-            recipient5,
-            recipient6,
-            recipient7,
-            recipient8,
-        ];
-        const amounts = [
-            web3.utils.toBN(web3.utils.toWei('1', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('2', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('4', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('8', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('16', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('32', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('64', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('128', 'ether')),
-        ];
-        const totalAmount = amounts.reduce((acc, val) => acc.add(val), web3.utils.toBN(0));
-
         await assertThrows(
-            rocketBatchTransfer.transferTokenAmounts(dummyRocketPoolToken.address, recipients, amounts, {from: owner}),
+            rocketBatchTransfer.transferTokenAmounts(dummyRocketPoolToken.address, amountRecipients, recipientAmounts, {from: owner}),
             'Transferred tokens without approval'
         );
 
-        await dummyRocketPoolToken.approve(rocketBatchTransfer.address, totalAmount.sub(web3.utils.toBN(web3.utils.toWei('1', 'ether'))), {from: owner});
+        await dummyRocketPoolToken.approve(rocketBatchTransfer.address, totalrecipientAmount.sub(web3.utils.toBN(web3.utils.toWei('1', 'ether'))), {from: owner});
         await assertThrows(
-            rocketBatchTransfer.transferTokenAmounts(dummyRocketPoolToken.address, recipients, amounts, {from: owner}),
+            rocketBatchTransfer.transferTokenAmounts(dummyRocketPoolToken.address, amountRecipients, recipientAmounts, {from: owner}),
             'Transferred tokens without approval of full amount'
         );
 
@@ -154,31 +121,9 @@ contract('RocketBatchTransfer', (accounts) => {
 
     it(printTitle('random account', 'cannot send different amounts of a token to multiple addresses'), async () => {
 
-        const recipients = [
-            recipient1,
-            recipient2,
-            recipient3,
-            recipient4,
-            recipient5,
-            recipient6,
-            recipient7,
-            recipient8,
-        ];
-        const amounts = [
-            web3.utils.toBN(web3.utils.toWei('1', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('2', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('4', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('8', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('16', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('32', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('64', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('128', 'ether')),
-        ];
-        const totalAmount = amounts.reduce((acc, val) => acc.add(val), web3.utils.toBN(0));
-
-        await dummyRocketPoolToken.approve(rocketBatchTransfer.address, totalAmount, {from: owner});
+        await dummyRocketPoolToken.approve(rocketBatchTransfer.address, totalrecipientAmount, {from: owner});
         await assertThrows(
-            rocketBatchTransfer.transferTokenAmounts(dummyRocketPoolToken.address, recipients, amounts, {from: random}),
+            rocketBatchTransfer.transferTokenAmounts(dummyRocketPoolToken.address, amountRecipients, recipientAmounts, {from: random}),
             'Random account transferred tokens'
         );
 
@@ -187,30 +132,13 @@ contract('RocketBatchTransfer', (accounts) => {
 
     it(printTitle('owner', 'can send different amounts of a token to multiple addresses'), async () => {
 
-        const recipients = [
-            recipient1,
-            recipient2,
-            recipient3,
-            recipient4,
-            recipient5,
-            recipient6,
-            recipient7,
-            recipient8,
-        ];
-        const amounts = [
-            web3.utils.toBN(web3.utils.toWei('1', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('2', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('4', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('8', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('16', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('32', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('64', 'ether')),
-            web3.utils.toBN(web3.utils.toWei('128', 'ether')),
-        ];
-        const totalAmount = amounts.reduce((acc, val) => acc.add(val), web3.utils.toBN(0));
+        await dummyRocketPoolToken.approve(rocketBatchTransfer.address, totalrecipientAmount, {from: owner});
+        let result = await rocketBatchTransfer.transferTokenAmounts(dummyRocketPoolToken.address, amountRecipients, recipientAmounts, {from: owner});
 
-        await dummyRocketPoolToken.approve(rocketBatchTransfer.address, totalAmount, {from: owner});
-        await rocketBatchTransfer.transferTokenAmounts(dummyRocketPoolToken.address, recipients, amounts, {from: owner});
+        console.log('-----');
+        console.log('Recipients:', amountRecipients.length);
+        console.log('Gas used:', result.receipt.gasUsed);
+        console.log('-----');
 
     });
 
