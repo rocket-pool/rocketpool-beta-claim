@@ -20,7 +20,7 @@
     "babel-preset-stage-3": "^6.24.1",
     "babel-register": "^6.26.0",
     "ganache-cli": "^6.12.1",
-    "truffle": "^5.1.51",
+    "truffle": "^5.7.1",
     "truffle-contract": "^3.*",
     "web3": "^1.2.8"
   }
